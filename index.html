@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Judge Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for Premium Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Landing Page Overlay -->
+    <div id="landing-page" class="landing-page">
+        <div class="landing-content">
+            <img src="logo.png" alt="PhotoContest Pro Judge Logo" class="landing-logo">
+            <h1 class="landing-title">PhotoContest Pro Judge</h1>
+            <p class="landing-tagline">“Streamlined Scoring Solutions”</p>
+            <div class="landing-about">
+                <p>Welcome to the ultimate tool for professional photo contest evaluation. Designed for accuracy and
+                    ease, our platform simplifies the judging process so you can focus on finding the perfect shot.</p>
+            </div>
+            <div class="landing-actions" style="display: flex; gap: 15px; justify-content: center;">
+                <button id="mechanics-btn" class="btn secondary large">Know the Mechanics</button>
+                <button id="start-btn" class="btn primary large pulse-animation">Start Judging</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden initially) -->
+    <div id="app-container" class="hidden">
+        <header>
+            <div class="header-content">
+                <img src="logo.png" style="height:40px; vertical-align:middle; margin-right:10px;">
+                <h1 style="display:inline; vertical-align:middle;">PhotoContest Pro Judge</h1>
+                <div id="timestamp-display" class="timestamp">Session Started: --</div>
+                <div id="progress-display" class="progress-pill">0 / 6 Scored</div>
+            </div>
+            <div class="header-actions">
+                <button id="guide-btn" class="btn secondary" style="margin-right: 10px;">Contest Mechanics</button>
+                <button id="reset-btn" class="btn secondary">Reset Session</button>
+            </div>
+        </header>
+
+        <main>
+            <div id="photo-grid" class="photo-grid">
+                <!-- Photos will be injected here by JS -->
+            </div>
+        </main>
+
+        <footer id="actions-footer">
+            <button id="finish-btn" class="btn primary large">Finish Judging & Rank</button>
+        </footer>
+        <div class="image-container" id="modal-image-container">
+            <img id="modal-image" src="" alt="Full view">
+            <div id="magnifier" class="magnifier"></div>
+        </div>
+        <p class="instruction">Hover to magnify. Click X to close.</p>
+    </div>
+    </div>
+
+    <!-- Tabulation/Ranking Modal -->
+    <div id="ranking-modal" class="modal hidden">
+        <div class="modal-card">
+            <!-- Fixed Header -->
+            <div class="modal-header">
+                <h2 style="margin:0; font-size: 1.2rem; color: white;">Final Rankings</h2>
+                <button id="close-ranking-x" class="icon-btn" aria-label="Close">&times;</button>
+            </div>
+
+            <!-- Fixed Timestamp -->
+            <div id="ranking-time" class="ranking-time">Session Started: --</div>
+
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="switchTab('all')">All Criteria</button>
+                <button class="tab-btn" onclick="switchTab('theme')">Relevance</button>
+                <button class="tab-btn" onclick="switchTab('creativity')">Creativity</button>
+                <button class="tab-btn" onclick="switchTab('impact')">Impact</button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="modal-scroll-body">
+                <div id="winner-display" class="winner-section">
+                    <!-- Winner content -->
+                </div>
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Photo</th>
+                            <th id="score-header">Total Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+                <div class="modal-actions">
+                    <button id="export-btn" class="btn primary">Export JSON</button>
+                    <button id="close-ranking" class="btn secondary">Close View</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="modal hidden">
+        <div class="modal-card">
+            <h2>Reset Session?</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">This will erase all current scores and randomize the photos
+                again.<br>This action cannot be undone.</p>
+            <div
+                style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 6px; padding: 10px; margin-bottom: 20px; text-align: left; font-size: 0.9rem;">
+                <strong style="color: #ef4444;">⚠️ Warning:</strong> Resetting will <strong>update your "Session
+                    Started" timestamp</strong> to the current time. If the official judging start time has passed,
+                this
+                may disqualify your submission.
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-reset-btn" class="btn primary"
+                    style="background-color: var(--danger-color); border: none;">Yes, Reset</button>
+                <button id="cancel-reset-btn" class="btn secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Message/Warning Modal -->
+    <div id="message-modal" class="modal hidden">
+        <div class="modal-card">
+            <h2 id="msg-title" style="color: #fbbf24;">Notice</h2>
+            <p id="msg-body" style="color: #ddd; margin-bottom: 20px; white-space: pre-line;">Message goes here.</p>
+            <div class="modal-actions">
+                <button id="msg-ok-btn" class="btn primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finalize Confirmation Modal -->
+    <div id="finalize-modal" class="modal hidden">
+        <div class="modal-card">
+            <h2>Finalize Results?</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">This will lock all scores and determine the winner.<br>You
+                cannot change scores after this.</p>
+            <div class="modal-actions">
+                <button id="confirm-finalize-btn" class="btn primary">Yes, Finalize</button>
+                <button id="cancel-finalize-btn" class="btn secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Guide Modal -->
+    <div id="guide-modal" class="modal hidden">
+        <div class="modal-card" style="text-align: left; max-width: 500px;">
+            <div class="modal-header">
+                <h2 style="margin:0; font-size: 1.2rem; color: white;">Contest Mechanics</h2>
+                <button id="close-guide-x" class="icon-btn" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-scroll-body" style="padding: 25px; color: #e0e0e0; line-height: 1.6; font-size: 0.95rem;">
+                <!-- QUICK GUIDE (TL;DR) -->
+                <div
+                    style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--accent-color); border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+                    <h3 style="color: var(--accent-color); margin: 0 0 10px; font-size: 1.1rem;">⚡ Quick Guide
+                        (TL;DR)
+                    </h3>
+                    <ul style="margin: 0; padding-left: 20px; list-style-type: square; color: #fff;">
+                        <li><strong>Start Time:</strong> Ensure your "Session Started" time is before the official
+                            deadline.</li>
+                        <li><strong>Rate All:</strong> Give scores (0-10) for Relevance, Creativity, & Impact.</li>
+                        <li><strong>Finish:</strong> Green checks = Done. Click "Finish Judging" to lock & rank.
+                        </li>
+                    </ul>
+                </div>
+
+                <p style="margin-top: 0;">Welcome to the <strong>PhotoContest Pro Judge</strong> panel. This tool
+                    allows
+                    you to evaluate and rank photos based on specific artistic criteria.</p>
+
+                <h3 style="color: #fbbf24; margin: 20px 0 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    1.
+                    The Mechanics</h3>
+                <ul style="padding-left: 20px; list-style-type: disc;">
+                    <li><strong>Navigation:</strong> Scroll through the gallery to see all assigned photos.</li>
+                    <li><strong>Zooming:</strong> Click on any photo thumbnail to open the <strong>Inspection
+                            Mode</strong>. Hover your mouse over the image to activate the high-precision magnifier.
+                    </li>
+                    <li><strong>Progress Tracking:</strong> The top bar ("0 / 6 Scored") tracks your progress. A
+                        green
+                        checkmark <span style="color:#10b981">✓</span> will appear on photos you have fully judged.
+                    </li>
+                </ul>
+
+                <h3 style="color: #fbbf24; margin: 20px 0 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    2.
+                    Scoring Criteria</h3>
+                <p>You must rate each photo from <strong>0.0 to 10.0</strong> on three distinct dimensions:</p>
+                <ul style="padding-left: 20px; list-style-type: disc;">
+                    <li><strong>Relevance:</strong> How well does the photo fit the theme or subject matter?</li>
+                    <li><strong>Creativity:</strong> Is the composition, lighting, or angle unique and artistic?
+                    </li>
+                    <li><strong>Impact:</strong> Does the image capture attention and evoke emotion?</li>
+                </ul>
+                <p><em>Tip: You can use the slider for rough scoring or type a precise decimal (e.g., 9.55) into the
+                        box.</em></p>
+
+                <h3 style="color: #fbbf24; margin: 20px 0 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    3.
+                    Rating Scale Reference</h3>
+                <p>Use the following standard guide to determine your scores:</p>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <tr style="border-bottom: 1px solid #444;">
+                            <td style="padding: 8px 15px; color: #10b981; font-weight: bold;">9.0 - 10.0</td>
+                            <td style="padding: 8px 15px;"><strong>Outstanding / Superior</strong><br><span
+                                    style="font-size:0.8em; color:#bbb;">Flawless technique, masterfully composed,
+                                    profound impact.</span></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #444;">
+                            <td style="padding: 8px 15px; color: #3b82f6; font-weight: bold;">7.0 - 8.9</td>
+                            <td style="padding: 8px 15px;"><strong>Excellent / Very Good</strong><br><span
+                                    style="font-size:0.8em; color:#bbb;">Strong execution, minor flaws, distinct
+                                    vision.</span></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #444;">
+                            <td style="padding: 8px 15px; color: #fbbf24; font-weight: bold;">5.0 - 6.9</td>
+                            <td style="padding: 8px 15px;"><strong>Good / Average</strong><br><span
+                                    style="font-size:0.8em; color:#bbb;">Competent but uninspired; technically
+                                    adequate.</span></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #444;">
+                            <td style="padding: 8px 15px; color: #f97316; font-weight: bold;">3.0 - 4.9</td>
+                            <td style="padding: 8px 15px;"><strong>Weak / Below Average</strong><br><span
+                                    style="font-size:0.8em; color:#bbb;">Noticeable technical issues, lacks impact
+                                    or
+                                    composition.</span></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 15px; color: #ef4444; font-weight: bold;">0.0 - 2.9</td>
+                            <td style="padding: 8px 15px;"><strong>Poor</strong><br><span
+                                    style="font-size:0.8em; color:#bbb;">Significant flaws, fails on multiple
+                                    criteria.</span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3 style="color: #fbbf24; margin: 20px 0 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    4.
+                    Session Validation</h3>
+                <p>The <strong>"Session Started"</strong> timestamp at the top of your screen is critical.</p>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 4px;">
+                    <strong>Why it matters:</strong> This timestamp proves when you began your judging session. It
+                    serves as validation that you commenced your evaluation <em>on or before</em> the official
+                    judging
+                    start time. A session started after the deadline may be disqualified.
+                </div>
+
+                <h3 style="color: #fbbf24; margin: 20px 0 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    5.
+                    Rules of Judging</h3>
+                <ul style="padding-left: 20px; list-style-type: disc;">
+                    <li><strong>Mandatory Scoring:</strong> You must provide a score for <strong>ALL three
+                            criteria</strong> for <strong>EVERY</strong> photo. The system will not let you finish
+                        if
+                        any score is missing.</li>
+                    <li><strong>No Skipped Photos:</strong> Ensure every card has a green checkmark before
+                        proceeding.
+                    </li>
+                </ul>
+
+                <h3 style="color: #ef4444; margin: 20px 0 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                    6.
+                    Finalizing Results</h3>
+                <p>Once you are satisfied with your evaluations, click the <strong>"Finish Judging & Rank"</strong>
+                    button at the bottom.</p>
+                <div
+                    style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 10px; margin-top: 10px;">
+                    <strong>⚠️ Important:</strong> Finalizing will <strong>LOCK ALL SCORES</strong>. You cannot go
+                    back
+                    and change ratings after this step. The system will then tabulate the results and declare the
+                    winners.
+                </div>
+
+                <div class="modal-actions" style="margin-top: 30px;">
+                    <button id="close-guide-btn" class="btn primary">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

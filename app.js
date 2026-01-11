@@ -15,7 +15,7 @@ const FILES = [
     "ocninon_macro_07.jpg"
 ];
 
-const PHOTO_BASE_PATH = "../OCN-Selected Photos (PhotoChoice AI)/";
+const PHOTO_BASE_PATH = "";
 const STORAGE_KEY = 'photoJudgeData';
 
 let state = {

@@ -55,11 +55,17 @@
         <footer id="actions-footer">
             <button id="finish-btn" class="btn primary large">Finish Judging & Rank</button>
         </footer>
-        <div class="image-container" id="modal-image-container">
-            <img id="modal-image" src="" alt="Full view">
-            <div id="magnifier" class="magnifier"></div>
+        <!-- Image Inspection Modal -->
+        <div id="image-modal" class="modal hidden">
+            <div class="modal-content">
+                <span id="close-modal" class="close-icon">&times;</span>
+                <div class="image-container" id="modal-image-container">
+                    <img id="modal-image" src="" alt="Full view">
+                    <div id="magnifier" class="magnifier"></div>
+                </div>
+                <p class="instruction">Hover to magnify. Click X to close.</p>
+            </div>
         </div>
-        <p class="instruction">Hover to magnify. Click X to close.</p>
     </div>
     </div>
 
